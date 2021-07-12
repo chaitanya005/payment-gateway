@@ -30,7 +30,7 @@ app.get("/payment", (req, res) => {
     MOBILE_NO: req.query.phone_number,
     EMAIL: req.query.email,
     TXN_AMOUNT: req.query.amount,
-    CALLBACK_URL: "http://localhost:7000/callback",
+    CALLBACK_URL: "https://paytm-payment-gateway.herokuapp.com/callback",
   };
 
   checksum
