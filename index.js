@@ -21,7 +21,7 @@ var checksum = require("./PaytmChecksum");
 app.get("/payment", (req, res) => {
   // console.log(req);
   var paytmParams = {
-    MID: "cQtZoh21460254137048",
+    MID: "WzotxY58284191647962",
     WEBSITE: "WEBSTAGING",
     INDUSTRY_TYPE_ID: "Retail",
     CHANNEL_ID: "WEB",
@@ -31,10 +31,11 @@ app.get("/payment", (req, res) => {
     EMAIL: req.query.email,
     TXN_AMOUNT: req.query.amount,
     CALLBACK_URL: "https://paytm-payment-gateway.herokuapp.com/callback",
+    // CALLBACK_URL: "http://localhost:7000/callback",
   };
 
   checksum
-    .generateSignature(paytmParams, "F_#gPMtsXKxJyYnQ")
+    .generateSignature(paytmParams, "6M5&O4LmLmlyr2gI")
     .then(function (reschecksum) {
       /* paytmParams.head = {
         clientId: "C11",
@@ -45,7 +46,7 @@ app.get("/payment", (req, res) => {
 
       var isValid = checksum.verifySignature(
         paytmParams,
-        "F_#gPMtsXKxJyYnQ",
+        "6M5&O4LmLmlyr2gI",
         reschecksum
       );
 
@@ -80,7 +81,7 @@ app.post("/callback", (req, res) => {
 
   var isValidChecksum = checksum.verifySignature(
     paytmParams,
-    "F_#gPMtsXKxJyYnQ",
+    "6M5&O4LmLmlyr2gI",
     paytmChecksum
   );
 
@@ -95,7 +96,7 @@ app.post("/callback", (req, res) => {
     };
 
     checksum
-      .generateSignature(JSON.stringify(paytmParams.body), "F_#gPMtsXKxJyYnQ")
+      .generateSignature(JSON.stringify(paytmParams.body), "6M5&O4LmLmlyr2gI")
       .then(function (checksum) {
         paytmParams.head = {
           signature: checksum,
@@ -104,7 +105,6 @@ app.post("/callback", (req, res) => {
         var post_data = JSON.stringify(paytmParams);
 
         var options = {
-          //   hostname: "securegw-stage.paytm.in",
           hostname: "securegw.paytm.in",
 
           /* for Production */
@@ -127,7 +127,25 @@ app.post("/callback", (req, res) => {
 
           post_res.on("end", function () {
             console.log("Response: ", response);
-            res.json(JSON.parse(response));
+            if (
+              JSON.parse(response).body.resultInfo.resultStatus ===
+              "TXN_FAILURE"
+            ) {
+              let resultMsg = JSON.parse(response).body.resultInfo.resultMsg;
+              let orderId = JSON.parse(response).body.orderId;
+              res.redirect(
+                `https://spontstore.com/order/failure?orderId=${orderId}&result_msg=${resultMsg}`
+              );
+            } else if (
+              JSON.parse(response).body.resultInfo.resultStatus ===
+              "TXN_SUCCESS"
+            ) {
+              let resultMsg = JSON.parse(response).body.resultInfo.resultMsg;
+              let orderId = JSON.parse(response).body.orderId;
+              res.redirect(
+                `https://spontstore.com/order/confirm?orderId=${orderId}&result_msg=${resultMsg}`
+              );
+            }
           });
         });
 
