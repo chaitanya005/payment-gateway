@@ -105,10 +105,10 @@ app.post("/callback", (req, res) => {
         var post_data = JSON.stringify(paytmParams);
 
         var options = {
-          hostname: "securegw.paytm.in",
+          // hostname: "securegw-stage.paytm.in",
 
           /* for Production */
-          // hostname: 'securegw.paytm.in',
+          hostname: "securegw.paytm.in",
 
           port: 443,
           path: "/v3/order/status",
@@ -142,8 +142,9 @@ app.post("/callback", (req, res) => {
             ) {
               let resultMsg = JSON.parse(response).body.resultInfo.resultMsg;
               let orderId = JSON.parse(response).body.orderId;
+              let txn_amount = JSON.parse(response).body.txnAmount;
               res.redirect(
-                `https://spontstore.com/order/confirm?orderId=${orderId}&result_msg=${resultMsg}`
+                `https://spontstore.com/order/confirm?orderId=${orderId}&result_msg=${resultMsg}&txn_amount=${txn_amount}`
               );
             }
           });
